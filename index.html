@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chrome Check</title>
+  </head>
+  <body>
+    <div id="result">Not tested yet...</div>
+    <textarea id="log" cols="70" rows="30"></textarea>
+    <div id="tests"></div>
+  </body>
+  <script>
+    const result = document.getElementById("result");
+    const logArea = document.getElementById("log");
+    const log = (data) => {
+      logArea.value += `${data}\n`;
+    };
+
+    const testUserAgent = () => {
+      const userAgent = navigator.userAgent;
+      if (userAgent.toLowerCase().includes("headless")) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const testAppVersion = () => {
+      const appVersion = navigator.appVersion;
+      if (appVersion.toLowerCase().includes("headless")) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const testWebdriver = () => {
+      const wd = navigator.webdriver;
+      if (wd) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const testImage = async () => {
+      const tests = document.getElementById("tests");
+      const img = document.createElement("img");
+      img.src = "invalid";
+      tests.appendChild(img);
+      await new Promise((resolve) => (img.onerror = () => resolve()));
+      if (img.clientHeight > 0) {
+        return 0;
+      }
+      return 1;
+    };
+
+    const testOuterWidth = async () => {
+      const outerHeight = window.outerHeight;
+      const outerWidth = window.outerWidth;
+      if (outerHeight === 0 || outerWidth === 0) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const testChrome = async () => {
+      if (!window.chrome) {
+        return 1;
+      }
+      return 0;
+    };
+
+    const tests = [
+      testUserAgent,
+      testAppVersion,
+      testWebdriver,
+      testImage,
+      testOuterWidth,
+      testChrome
+    ];
+
+    const checkAll = async () => {
+      const results = await Promise.all(
+        tests.map(async (test) => {
+          const res = await test();
+          log(`${test.name.padEnd(20)}: ${res}`);
+          return res;
+        })
+      );
+      const score =
+        results.reduce((partialSum, a) => partialSum + a, 0) / results.length;
+      return score;
+    };
+
+    const main = async () => {
+      const score = await checkAll();
+
+      if (score > 0) {
+        result.textContent = `headless, score=${score}`;
+        console.log("headless");
+      } else {
+        result.textContent = `generic, score=${score}`;
+        console.log("generic");
+      }
+    };
+
+    main();
+  </script>
+</html>
+
+<!-- 
+  data sources:
+  https://antoinevastel.com/bot%20detection/2018/01/17/detect-chrome-headless-v2.html
+  https://github.com/infosimples/detect-headless
+-->
