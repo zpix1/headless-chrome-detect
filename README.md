@@ -51,7 +51,7 @@ testImage           : 0
 3. Outer width == 0 detection
 4. Broken image zero size detection (looks like it does not work anymore)
 
-## Used fixes to hide headless chrome:
+## Used fixes to hide headless chrome
 
 1. None
 2. Fake User Agent
